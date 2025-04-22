@@ -2,9 +2,9 @@ from typing import List, Optional, Tuple
 
 import gradio
 
-from facefusion import state_manager, wording
+from facefusion import file_history, state_manager, wording
 from facefusion.common_helper import get_first
-from facefusion.filesystem import filter_audio_paths, filter_image_paths, has_audio, has_image
+from facefusion.filesystem import filter_audio_paths, filter_image_paths, has_audio, has_image, is_image, is_audio
 from facefusion.uis.core import register_ui_component
 from facefusion.uis.typing import File
 
@@ -58,6 +58,22 @@ def update(files : List[File]) -> Tuple[gradio.Audio, gradio.Image]:
 	if has_source_audio or has_source_image:
 		source_audio_path = get_first(filter_audio_paths(file_names))
 		source_image_path = get_first(filter_image_paths(file_names))
+
+		# Save files to history
+		if file_names:
+			for file_name in file_names:
+				if is_image(file_name):
+					file_history.add_source_file(file_name, 'image')
+				elif is_audio(file_name):
+					file_history.add_source_file(file_name, 'audio')
+
+		# Update file history gallery if available
+		from facefusion.uis.components.file_history import update_galleries
+		try:
+			update_galleries()
+		except Exception:
+			pass
+
 		state_manager.set_item('source_paths', file_names)
 		return gradio.Audio(value = source_audio_path, visible = has_source_audio), gradio.Image(value = source_image_path, visible = has_source_image)
 	state_manager.clear_item('source_paths')

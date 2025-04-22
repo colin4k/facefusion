@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 import gradio
 
-from facefusion import state_manager, wording
+from facefusion import file_history, state_manager, wording
 from facefusion.face_store import clear_reference_faces, clear_static_faces
 from facefusion.filesystem import get_file_size, is_image, is_video
 from facefusion.uis.core import register_ui_component
@@ -69,9 +69,25 @@ def update(file : File) -> Tuple[gradio.Image, gradio.Video]:
 	clear_static_faces()
 	if file and is_image(file.name):
 		state_manager.set_item('target_path', file.name)
+		# Save to history
+		file_history.add_target_file(file.name, 'image')
+		# Update file history gallery if available
+		from facefusion.uis.components.file_history import update_galleries
+		try:
+			update_galleries()
+		except Exception:
+			pass
 		return gradio.Image(value = file.name, visible = True), gradio.Video(value = None, visible = False)
 	if file and is_video(file.name):
 		state_manager.set_item('target_path', file.name)
+		# Save to history
+		file_history.add_target_file(file.name, 'video')
+		# Update file history gallery if available
+		from facefusion.uis.components.file_history import update_galleries
+		try:
+			update_galleries()
+		except Exception:
+			pass
 		if get_file_size(file.name) > FILE_SIZE_LIMIT:
 			preview_vision_frame = normalize_frame_color(get_video_frame(file.name))
 			return gradio.Image(value = preview_vision_frame, visible = True), gradio.Video(value = None, visible = False)

@@ -1,9 +1,9 @@
 [paths]
-temp_path = ./running/temp
-jobs_path = ./running/jobs
-source_paths = ./runningsource/
-target_path = ./runningtarget/
-output_path = ./runningoutput/
+temp_path = /Volumes/mac-bak/facefusion/temp
+jobs_path = /Volumes/mac-bak/facefusion/running/jobs
+source_paths = /Volumes/mac-bak/facefusion/runningsource/
+target_path = /Volumes/mac-bak/facefusion/runningtarget/
+output_path = /Volumes/mac-bak/facefusion/runningoutput/
 
 [patterns]
 source_pattern =

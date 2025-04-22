@@ -34,13 +34,22 @@ def get_history_file_path() -> str:
 def load_history() -> Dict:
     """Load file history from disk"""
     history_file = get_history_file_path()
+    default_history = {"source_files": [], "target_files": []}
+
     if is_file(history_file):
         try:
             with open(history_file, 'r') as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            return {"source_files": [], "target_files": []}
-    return {"source_files": [], "target_files": []}
+                history = json.load(f)
+                # Ensure the history dictionary has the required keys
+                if "source_files" not in history:
+                    history["source_files"] = []
+                if "target_files" not in history:
+                    history["target_files"] = []
+                return history
+        except (json.JSONDecodeError, Exception):
+            # If there's any error loading the file, return default history
+            return default_history
+    return default_history
 
 def save_history(history: Dict) -> None:
     """Save file history to disk"""
@@ -54,6 +63,12 @@ def add_source_file(file_path: str, file_type: str) -> None:
         return
 
     history = load_history()
+
+    # Ensure the history dictionary has the required keys
+    if "source_files" not in history:
+        history["source_files"] = []
+    if "target_files" not in history:
+        history["target_files"] = []
 
     # Check if file already exists in history
     for file in history["source_files"]:
@@ -85,6 +100,12 @@ def add_target_file(file_path: str, file_type: str) -> None:
 
     history = load_history()
 
+    # Ensure the history dictionary has the required keys
+    if "source_files" not in history:
+        history["source_files"] = []
+    if "target_files" not in history:
+        history["target_files"] = []
+
     # Check if file already exists in history
     for file in history["target_files"]:
         if file["path"] == file_path:
@@ -111,11 +132,19 @@ def add_target_file(file_path: str, file_type: str) -> None:
 def get_source_files() -> List[Dict]:
     """Get list of source files from history"""
     history = load_history()
+    # Ensure the history dictionary has the required keys
+    if "source_files" not in history:
+        history["source_files"] = []
+        save_history(history)
     return history["source_files"]
 
 def get_target_files() -> List[Dict]:
     """Get list of target files from history"""
     history = load_history()
+    # Ensure the history dictionary has the required keys
+    if "target_files" not in history:
+        history["target_files"] = []
+        save_history(history)
     return history["target_files"]
 
 def clear_history() -> None:

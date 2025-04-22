@@ -1,10 +1,15 @@
 import json
 import os
+import tempfile
 from typing import Dict, List, Optional
 
 from facefusion import state_manager
 from facefusion.filesystem import is_file, create_directory
 from facefusion.typing import File
+
+# Initialize state if not already set
+if state_manager.get_item('temp_path') is None:
+    state_manager.init_item('temp_path', tempfile.gettempdir())
 
 # File history structure
 # {
@@ -18,6 +23,10 @@ from facefusion.typing import File
 
 def get_history_file_path() -> str:
     """Get the path to the history file"""
+    # Ensure temp_path is set
+    if state_manager.get_item('temp_path') is None:
+        state_manager.init_item('temp_path', tempfile.gettempdir())
+
     history_dir = os.path.join(state_manager.get_item('temp_path'), 'facefusion', 'history')
     create_directory(history_dir)
     return os.path.join(history_dir, 'file_history.json')
@@ -43,9 +52,9 @@ def add_source_file(file_path: str, file_type: str) -> None:
     """Add a source file to history"""
     if not is_file(file_path):
         return
-    
+
     history = load_history()
-    
+
     # Check if file already exists in history
     for file in history["source_files"]:
         if file["path"] == file_path:
@@ -54,7 +63,7 @@ def add_source_file(file_path: str, file_type: str) -> None:
             history["source_files"].insert(0, file)
             save_history(history)
             return
-    
+
     # Add new file to history
     import time
     history["source_files"].insert(0, {
@@ -62,20 +71,20 @@ def add_source_file(file_path: str, file_type: str) -> None:
         "type": file_type,
         "timestamp": int(time.time())
     })
-    
+
     # Limit history size to 20 items
     if len(history["source_files"]) > 20:
         history["source_files"] = history["source_files"][:20]
-    
+
     save_history(history)
 
 def add_target_file(file_path: str, file_type: str) -> None:
     """Add a target file to history"""
     if not is_file(file_path):
         return
-    
+
     history = load_history()
-    
+
     # Check if file already exists in history
     for file in history["target_files"]:
         if file["path"] == file_path:
@@ -84,7 +93,7 @@ def add_target_file(file_path: str, file_type: str) -> None:
             history["target_files"].insert(0, file)
             save_history(history)
             return
-    
+
     # Add new file to history
     import time
     history["target_files"].insert(0, {
@@ -92,11 +101,11 @@ def add_target_file(file_path: str, file_type: str) -> None:
         "type": file_type,
         "timestamp": int(time.time())
     })
-    
+
     # Limit history size to 20 items
     if len(history["target_files"]) > 20:
         history["target_files"] = history["target_files"][:20]
-    
+
     save_history(history)
 
 def get_source_files() -> List[Dict]:

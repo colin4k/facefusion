@@ -217,16 +217,20 @@ def update_preview_image(frame_number : int = 0) -> gradio.Image:
 
 	if is_image(state_manager.get_item('target_path')):
 		target_vision_frame = read_static_image(state_manager.get_item('target_path'))
+		if target_vision_frame is None:
+			return gradio.Image(value = None)
 		preview_vision_frame = process_preview_frame(reference_faces, source_face, source_audio_frame, target_vision_frame)
 		preview_vision_frame = normalize_frame_color(preview_vision_frame)
 		return gradio.Image(value = preview_vision_frame, elem_classes = [ 'image-preview', 'is-' + detect_frame_orientation(preview_vision_frame) ])
 
 	if is_video(state_manager.get_item('target_path')):
 		temp_vision_frame = get_video_frame(state_manager.get_item('target_path'), frame_number)
+		if temp_vision_frame is None:
+			return gradio.Image(value = None)
 		preview_vision_frame = process_preview_frame(reference_faces, source_face, source_audio_frame, temp_vision_frame)
 		preview_vision_frame = normalize_frame_color(preview_vision_frame)
 		return gradio.Image(value = preview_vision_frame, elem_classes = [ 'image-preview', 'is-' + detect_frame_orientation(preview_vision_frame) ])
-	return gradio.Image(value = None, elem_classes = None)
+	return gradio.Image(value = None)
 
 
 def update_preview_frame_slider() -> gradio.Slider:
